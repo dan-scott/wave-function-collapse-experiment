@@ -7,6 +7,7 @@ import {
   Text,
   TextStyle,
 } from "pixi.js";
+import { idx, TileId } from "./tileId";
 
 interface Options {
   url: string;
@@ -18,11 +19,10 @@ interface Options {
 export interface ITileAtlas {
   readonly Rows: number;
   readonly Columns: number;
+  readonly TileSize: number;
   draw(x: number, y: number, scale: number, container: Container): void;
-  spriteAt(x: number, y: number): Sprite;
+  spriteAt(id: TileId): Sprite;
 }
-
-const id = (x: number, y: number) => `f${x}_${y}`;
 
 class TileAtlas implements ITileAtlas {
   readonly #sheet: Spritesheet;
@@ -43,6 +43,9 @@ class TileAtlas implements ITileAtlas {
   public get Rows() {
     return this.#rows;
   }
+  public get TileSize() {
+    return this.#tileSize;
+  }
 
   constructor(
     sheet: Spritesheet,
@@ -58,8 +61,8 @@ class TileAtlas implements ITileAtlas {
     this.#tileSize = tileSize;
   }
 
-  public spriteAt(x: number, y: number): Sprite {
-    return new Sprite(this.#sheet.textures[id(x, y)]);
+  public spriteAt(id: TileId): Sprite {
+    return new Sprite(this.#sheet.textures[id.id]);
   }
 
   draw(xp: number, yp: number, scale: number, container: Container): void {
@@ -73,7 +76,7 @@ class TileAtlas implements ITileAtlas {
     });
     for (let x = 0; x < 23; x++) {
       for (let y = 0; y < 8; y++) {
-        const spr = this.spriteAt(x, y);
+        const spr = this.spriteAt(idx(x, y));
         spr.scale = { x: scale, y: scale };
         spr.x = xp + x * (this.#tileSize + 1) * scale;
         spr.y = yp + y * (this.#tileSize + 1) * scale;
@@ -108,7 +111,7 @@ function spriteDataOf(
   const frames: ISpritesheetData["frames"] = {};
   for (let x = 0; x < columns; x++) {
     for (let y = 0; y < rows; y++) {
-      frames[id(x, y)] = {
+      frames[idx(x, y).id] = {
         frame: {
           x: x * size,
           y: y * size,
