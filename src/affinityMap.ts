@@ -203,6 +203,9 @@ export class AffinityMap {
     direction: Direction,
     targetSuperPosition: Set<TileId>
   ) {
+    if (!sourceTiles.size) {
+      return false;
+    }
     const allValid = new Set<TileId>();
     sourceTiles.forEach((v) => {
       this.#map[v.id][direction].forEach((t) => allValid.add(t));

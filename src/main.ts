@@ -36,7 +36,7 @@ const flipViewMode = () => {
 
 document.body.appendChild(app.view);
 
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function drawWaveFunction(
   affinity: AffinityMap,
