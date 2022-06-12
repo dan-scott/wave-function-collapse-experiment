@@ -41,6 +41,12 @@ export class WaveFunctionGrid {
     this.#modified = new Set<number>();
   }
 
+  public reset() {
+    for (let i = 0; i < this.#superPos.length; i++) {
+      this.#superPos[i] = new Set(this.#affinity.Ids);
+    }
+  }
+
   private idx(x: number, y: number) {
     return x + y * this.#width;
   }

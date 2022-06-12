@@ -61,58 +61,88 @@ export class AffinityMap {
     centerSprite.y = y;
     centerSprite.scale = { x: 3, y: 3 };
     container.addChild(centerSprite);
+
+    const style = new TextStyle({
+      fill: "white",
+      fontSize: 8,
+      stroke: "red",
+      strokeThickness: 3,
+    });
+
+    const txt = new Text(id.id, {
+      fill: "white",
+      fontSize: 10,
+      stroke: "red",
+      strokeThickness: 3,
+    });
+    txt.x = x;
+    txt.y = y - 20;
+    container.addChild(txt);
+
+    const drawId = (t: TileId, x: number, y: number) => {
+      const txt = new Text(t.id, style);
+      txt.x = x;
+      txt.y = y;
+      container.addChild(txt);
+    };
+
     let obj = new Graphics();
     obj.lineStyle(1, 0xff0000);
     Array.from(this.#map[id.id].n).forEach((t, i) => {
       const spr = this.#atlas.spriteAt(t);
-      spr.x = x + i * 17;
+      spr.x = x + i * 25;
       spr.y = y - 73;
       container.addChild(spr);
       obj.drawRect(spr.x - 1, spr.y - 1, 18, 18);
+      drawId(t, spr.x, spr.y - 16);
     });
 
     Array.from(this.#map[id.id].s).forEach((t, i) => {
       const spr = this.#atlas.spriteAt(t);
-      spr.x = x + i * 17;
+      spr.x = x + i * 25;
       spr.y = y + 100;
       container.addChild(spr);
       obj.drawRect(spr.x - 1, spr.y - 1, 18, 18);
+      drawId(t, spr.x, spr.y - 16);
     });
 
     Array.from(this.#map[id.id].e).forEach((t, i) => {
       const spr = this.#atlas.spriteAt(t);
       spr.x = x + 100;
-      spr.y = y + i * 17;
+      spr.y = y + i * 25 - 30;
       container.addChild(spr);
       obj.drawRect(spr.x - 1, spr.y - 1, 18, 18);
+      drawId(t, spr.x + 16, spr.y);
     });
 
     Array.from(this.#map[id.id].w).forEach((t, i) => {
       const spr = this.#atlas.spriteAt(t);
       spr.x = x - 73;
-      spr.y = y + i * 17;
+      spr.y = y + i * 25 - 30;
       container.addChild(spr);
       obj.drawRect(spr.x - 1, spr.y - 1, 18, 18);
+      drawId(t, spr.x + 16, spr.y);
     });
     container.addChild(obj);
   }
 
-  public drawTiles(x: number, y: number, container: Container) {
+  public drawTiles(x: number, y: number, container: Container, scale = 2) {
     const txtStyle = new TextStyle({
       fill: "white",
       stroke: "red",
       strokeThickness: 2,
       fontSize: 10,
     });
+
     Array.from(this.#tileIds).forEach((id, i) => {
       const spr = this.#atlas.spriteAt(id);
-      spr.x = x + (this.#atlas.TileSize + 1) * i * 2;
+      spr.x = x + (this.#atlas.TileSize + 1) * i * scale;
       spr.y = y;
-      spr.scale = { x: 2, y: 2 };
+      spr.scale = { x: scale, y: scale };
       container.addChild(spr);
       const txt = new Text(id.id, txtStyle);
-      txt.x = spr.x + 6;
-      txt.y = spr.y + 7;
+      txt.x = spr.x + (this.#atlas.TileSize * scale - txt.width) / 2;
+      txt.y = spr.y - txt.height;
       container.addChild(txt);
     });
   }

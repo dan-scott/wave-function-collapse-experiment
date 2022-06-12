@@ -57,30 +57,10 @@ export async function loadPacked(): Promise<[ITileAtlas, AffinityMap]> {
   aff.add(idx(5, 1), "e");
   aff.add(idx(5, 1), "w", idx(4, 1), idx(3, 1), idx(3, 3));
 
-  aff.add(idx(1, 1), "n", idx(1, 3), idx(3, 3));
-  aff.add(idx(1, 1), "s");
-  aff.add(idx(1, 1), "e");
-  aff.add(idx(1, 1), "w", idx(3, 1), idx(3, 3));
-
-  aff.add(idx(3, 1), "n", idx(1, 3), idx(3, 3));
-  aff.add(idx(3, 1), "s");
-  aff.add(idx(3, 1), "e", idx(1, 3));
-  aff.add(idx(3, 1), "w");
-
   aff.add(idx(4, 1), "n", idx(1, 3), idx(3, 3));
   aff.add(idx(4, 1), "s", idx(1, 4), idx(1, 1), idx(3, 1));
   aff.add(idx(4, 1), "e", idx(1, 1), idx(1, 3));
   aff.add(idx(4, 1), "w", idx(3, 1), idx(3, 3));
-
-  aff.add(idx(1, 3), "n");
-  aff.add(idx(1, 3), "s");
-  aff.add(idx(1, 3), "e");
-  aff.add(idx(1, 3), "w", idx(3, 3));
-
-  aff.add(idx(3, 3), "n");
-  aff.add(idx(3, 3), "s");
-  aff.add(idx(3, 3), "e");
-  aff.add(idx(3, 3), "w");
 
   return [atlas, aff];
 }
