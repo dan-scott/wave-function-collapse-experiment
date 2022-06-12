@@ -22,17 +22,17 @@ const getViewIdx = () => {
   return parseInt(val, 10);
 };
 
-// type ViewMode = "waveFunction" | "atlas";
-//
-// const getViewMode = (): ViewMode =>
-//   (localStorage.getItem("view_mode") as ViewMode | undefined) ?? "atlas";
-//
-// const flipViewMode = () => {
-//   localStorage.setItem(
-//     "view_mode",
-//     getViewMode() === "atlas" ? "waveFunction" : "atlas"
-//   );
-// };
+type ViewMode = "waveFunction" | "atlas";
+
+const getViewMode = (): ViewMode =>
+  (localStorage.getItem("view_mode") as ViewMode | undefined) ?? "atlas";
+
+const flipViewMode = () => {
+  localStorage.setItem(
+    "view_mode",
+    getViewMode() === "atlas" ? "waveFunction" : "atlas"
+  );
+};
 
 document.body.appendChild(app.view);
 
@@ -50,9 +50,23 @@ function drawWaveFunction(
   const [atlas, affinity] = await loadPacked();
 
   let wfgContainer = new Container();
-  app.stage.addChild(wfgContainer);
-
+  // app.stage.addChild(wfgContainer);
   drawWaveFunction(affinity, atlas, wfgContainer);
+
+  let atlasContainer = new Container();
+  atlas.draw(0, 0, 2, atlasContainer);
+
+  const drawMain = () => {
+    if (getViewMode() === "atlas") {
+      app.stage.removeChild(wfgContainer);
+      app.stage.addChild(atlasContainer);
+    } else {
+      app.stage.removeChild(atlasContainer);
+      app.stage.addChild(wfgContainer);
+    }
+  };
+
+  drawMain();
 
   affinity.drawTiles(0, 560, app.stage, 1.8);
 
@@ -61,12 +75,17 @@ function drawWaveFunction(
   drawAffinity(affinity);
 
   window.addEventListener("keypress", (evt) => {
-    if (evt.key === "r") {
+    if (evt.key === "r" && getViewMode() === "waveFunction") {
       app.stage.removeChild(wfgContainer);
       wfgContainer.destroy({ children: true });
       wfgContainer = new Container();
       app.stage.addChild(wfgContainer);
       drawWaveFunction(affinity, atlas, wfgContainer);
+    }
+
+    if (evt.key === "e") {
+      flipViewMode();
+      drawMain();
     }
 
     if (evt.key === "d") {
