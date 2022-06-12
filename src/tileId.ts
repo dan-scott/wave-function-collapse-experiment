@@ -1,11 +1,13 @@
-const idStr = (x: number, y: number) => `${x}_${y}`;
+export type TileIdStr = `${number}_${number}`;
 
-const idxDict: Record<string, TileId> = {};
+const idStr = (x: number, y: number): TileIdStr => `${x}_${y}`;
+
+const idxDict: Record<TileIdStr, TileId> = {};
 
 export class TileId {
   readonly #x: number;
   readonly #y: number;
-  readonly #id: string;
+  readonly #id: TileIdStr;
 
   public get x() {
     return this.#x;
@@ -19,19 +21,30 @@ export class TileId {
     return this.#id;
   }
 
-  private constructor(x: number, y: number, id: string) {
+  private constructor(x: number, y: number, id: TileIdStr) {
     this.#x = x;
     this.#y = y;
     this.#id = id;
   }
 
-  public static Of(x: number, y: number) {
-    const i = idStr(x, y);
-    if (!idxDict[i]) {
-      idxDict[i] = new TileId(x, y, i);
+  public static Of(id: { x: number; y: number } | TileIdStr) {
+    if (typeof id === "object") {
+      const i = idStr(id.x, id.y);
+      if (!idxDict[i]) {
+        idxDict[i] = new TileId(id.x, id.y, i);
+      }
+      return idxDict[i];
     }
-    return idxDict[i];
+    if (!idxDict[id]) {
+      const parts = id.split("_");
+      idxDict[id] = new TileId(
+        parseInt(parts[0], 10),
+        parseInt(parts[1], 10),
+        id
+      );
+    }
+    return idxDict[id];
   }
 }
 
-export const idx = (x: number, y: number): TileId => TileId.Of(x, y);
+export const idx = (x: number, y: number): TileId => TileId.Of({ x, y });

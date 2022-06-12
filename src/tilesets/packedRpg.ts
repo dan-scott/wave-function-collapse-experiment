@@ -1,7 +1,6 @@
 import { AffinityMap } from "../affinityMap";
 import { ITileAtlas, loadTileAtlas } from "../tileAtlas";
 import tiles from "../../res/tiles_packed.png";
-import { idx } from "../tileId";
 
 export async function loadPacked(): Promise<[ITileAtlas, AffinityMap]> {
   const atlas = await loadTileAtlas({
@@ -12,55 +11,140 @@ export async function loadPacked(): Promise<[ITileAtlas, AffinityMap]> {
   });
 
   const aff = new AffinityMap(atlas);
-  aff.add(idx(22, 7), "n", idx(22, 7), idx(0, 4), idx(1, 4), idx(5, 4));
-  aff.add(idx(22, 7), "s", idx(22, 7), idx(0, 0), idx(1, 0), idx(5, 0));
-  aff.add(idx(22, 7), "e", idx(22, 7), idx(0, 0), idx(0, 1), idx(0, 4));
-  aff.add(idx(22, 7), "w", idx(22, 7), idx(5, 0), idx(5, 1), idx(5, 4));
+  aff.add("22_7", "n", "22_7", "0_4", "1_4", "5_4", "2_2");
+  aff.add("22_7", "s", "22_7", "0_0", "1_0", "5_0", "2_2", "6_0");
+  aff.add("22_7", "e", "22_7", "0_0", "0_1", "0_4", "2_2", "6_0");
+  aff.add("22_7", "w", "22_7", "5_0", "5_1", "5_4", "2_2");
 
-  aff.add(idx(0, 4), "n", idx(3, 1));
-  aff.add(idx(0, 4), "s");
-  aff.add(idx(0, 4), "e", idx(1, 4), idx(5, 4), idx(3, 1));
-  aff.add(idx(0, 4), "w");
+  aff.add("0_4", "n", "3_1");
+  aff.add("0_4", "s");
+  aff.add("0_4", "e", "1_4", "5_4", "3_1");
+  aff.add("0_4", "w");
 
-  aff.add(idx(1, 4), "n", idx(1, 3), idx(3, 3));
-  aff.add(idx(1, 4), "s");
-  aff.add(idx(1, 4), "e", idx(1, 4), idx(5, 4), idx(3, 1));
-  aff.add(idx(1, 4), "w", idx(1, 1));
+  aff.add("1_4", "n", "1_3", "3_3");
+  aff.add("1_4", "s");
+  aff.add("1_4", "e", "1_4", "5_4", "3_1");
+  aff.add("1_4", "w", "1_1");
 
-  aff.add(idx(5, 4), "n", idx(1, 1));
-  aff.add(idx(5, 4), "s");
-  aff.add(idx(5, 4), "e");
-  aff.add(idx(5, 4), "w", idx(1, 1));
+  aff.add("5_4", "n", "1_1");
+  aff.add("5_4", "s");
+  aff.add("5_4", "e");
+  aff.add("5_4", "w", "1_1");
 
-  aff.add(idx(0, 0), "n");
-  aff.add(idx(0, 0), "s", idx(0, 1), idx(0, 4), idx(3, 3));
-  aff.add(idx(0, 0), "e", idx(1, 0), idx(5, 0), idx(3, 3));
-  aff.add(idx(0, 0), "w");
+  aff.add("0_0", "n");
+  aff.add("0_0", "s", "0_1", "0_4", "3_3");
+  aff.add("0_0", "e", "1_0", "5_0", "3_3");
+  aff.add("0_0", "w");
 
-  aff.add(idx(1, 0), "n");
-  aff.add(idx(1, 0), "s", idx(4, 1), idx(1, 1), idx(3, 1), idx(1, 4));
-  aff.add(idx(1, 0), "e", idx(1, 0), idx(3, 3));
-  aff.add(idx(1, 0), "w", idx(1, 3));
+  aff.add("1_0", "n");
+  aff.add("1_0", "s", "4_1", "1_1", "3_1", "1_4");
+  aff.add("1_0", "e", "1_0", "3_3");
+  aff.add("1_0", "w", "1_3");
 
-  aff.add(idx(5, 0), "n");
-  aff.add(idx(5, 0), "s", idx(5, 1), idx(5, 4), idx(1, 3));
-  aff.add(idx(5, 0), "e");
-  aff.add(idx(5, 0), "w", idx(1, 0), idx(1, 3));
+  aff.add("5_0", "n");
+  aff.add("5_0", "s", "5_1", "5_4", "1_3");
+  aff.add("5_0", "e");
+  aff.add("5_0", "w", "1_0", "1_3");
 
-  aff.add(idx(0, 1), "n", idx(0, 1), idx(3, 1));
-  aff.add(idx(0, 1), "s", idx(0, 4), idx(3, 3));
-  aff.add(idx(0, 1), "e", idx(4, 1), idx(5, 1), idx(1, 1), idx(1, 3));
-  aff.add(idx(0, 1), "w");
+  aff.add("0_1", "n", "0_1", "3_1");
+  aff.add("0_1", "s", "0_4", "3_3");
+  aff.add("0_1", "e", "4_1", "5_1", "1_1", "1_3");
+  aff.add("0_1", "w");
 
-  aff.add(idx(5, 1), "n", idx(5, 1), idx(1, 1));
-  aff.add(idx(5, 1), "s", idx(1, 3), idx(5, 4));
-  aff.add(idx(5, 1), "e");
-  aff.add(idx(5, 1), "w", idx(4, 1), idx(3, 1), idx(3, 3));
+  aff.add("5_1", "n", "5_1", "1_1");
+  aff.add("5_1", "s", "1_3", "5_4");
+  aff.add("5_1", "e");
+  aff.add("5_1", "w", "4_1", "3_1", "3_3");
 
-  aff.add(idx(4, 1), "n", idx(1, 3), idx(3, 3));
-  aff.add(idx(4, 1), "s", idx(1, 4), idx(1, 1), idx(3, 1));
-  aff.add(idx(4, 1), "e", idx(1, 1), idx(1, 3));
-  aff.add(idx(4, 1), "w", idx(3, 1), idx(3, 3));
+  aff.add("4_1", "n", "1_3", "3_3");
+  aff.add("4_1", "s", "1_4", "1_1", "3_1");
+  aff.add("4_1", "e", "1_1", "1_3");
+  aff.add("4_1", "w", "3_1", "3_3");
+
+  aff.add("6_0", "n");
+  aff.add("6_0", "s", "6_1", "8_2", "8_5", "7_7");
+  aff.add("6_0", "e", "7_0", "8_2", "8_6", "9_6");
+  aff.add("6_0", "w");
+
+  aff.add("6_1", "n", "8_0", "6_3", "8_4", "7_5", "8_5", "7_6");
+  aff.add("6_1", "s", "6_1", "6_2", "8_2", "7_4", "8_5", "7_6", "8_6", "7_7");
+  aff.add("6_1", "e", "22_7");
+  aff.add("6_1", "w", "22_7");
+
+  aff.add("8_2", "n", "8_4", "7_6");
+  aff.add("8_2", "s", "22_7");
+  aff.add("8_2", "e", "22_7");
+  aff.add("8_2", "w", "6_5", "7_5");
+
+  aff.add("8_5", "n", "8_4", "7_6");
+  aff.add("8_5", "s", "6_2", "7_6", "7_7");
+  aff.add("8_5", "e", "22_7");
+  aff.add("8_5", "w", "6_5");
+
+  aff.add("7_7", "n", "8_0", "6_3", "8_4", "7_5", "7_6");
+  aff.add("7_7", "s", "22_7");
+  aff.add("7_7", "e", "22_7");
+  aff.add("7_7", "w", "22_7");
+
+  aff.add("7_0", "n", "22_7");
+  aff.add("7_0", "s", "22_7");
+  aff.add("7_0", "e", "8_0", "8_2", "7_3", "7_5", "8_5", "8_6", "9_6", "7_0");
+  aff.add("7_0", "w", "6_2", "6_4", "6_5", "7_5", "7_6", "8_6");
+
+  aff.add("8_6", "n", "8_4");
+  aff.add("8_6", "s", "22_7");
+  aff.add("8_6", "e", "8_0", "7_5", "9_6");
+  aff.add("8_6", "w", "7_5", "6_5");
+
+  aff.add("9_6", "n", "22_7");
+  aff.add("9_6", "s", "22_7");
+  aff.add("9_6", "e", "22_7");
+  aff.add("9_6", "w", "6_2", "6_4", "6_5", "7_5", "7_6");
+
+  aff.add("8_0", "n", "22_7");
+  aff.add("8_0", "s", "6_2", "7_6", "7_7");
+  aff.add("8_0", "e", "22_7");
+  aff.add("8_0", "w", "6_2", "6_5");
+
+  aff.add("6_3", "n", "1_0", "4_1", "1_3", "3_3", "7_4");
+  aff.add("6_3", "s");
+  aff.add("6_3", "e", "1_4", "5_4");
+  aff.add("6_3", "w", "1_4", "0_4");
+
+  aff.add("8_4", "n", "22_7");
+  aff.add("8_4", "s", "6_2", "7_6", "7_4");
+  aff.add("8_4", "e", "22_7");
+  aff.add("8_4", "w", "22_7");
+
+  aff.add("7_5", "n", "22_7");
+  aff.add("7_5", "s");
+  aff.add("7_5", "e");
+  aff.add("7_5", "w", "6_2", "6_5");
+
+  aff.add("7_6", "n");
+  aff.add("7_6", "s");
+  aff.add("7_6", "e");
+  aff.add("7_6", "w", "22_7");
+
+  aff.add("7_4", "n");
+  aff.add("7_4", "s", "1_1", "3_1", "1_4");
+  aff.add("7_4", "e", "1_0", "5_0");
+  aff.add("7_4", "w", "0_0", "1_0");
+
+  aff.add("6_5", "n", "22_7");
+  aff.add("6_5", "s", "22_7");
+  aff.add("6_5", "e", "7_3");
+  aff.add("6_5", "w", "22_7");
+
+  aff.add("7_3", "n", "0_0", "0_1");
+  aff.add("7_3", "s", "0_1", "0_4");
+  aff.add("7_3", "e", "1_1", "5_1", "1_3", "6_4");
+  aff.add("7_3", "w");
+
+  aff.add("6_4", "n", "5_0", "5_1");
+  aff.add("6_4", "s", "5_1", "5_4");
+  aff.add("6_4", "e");
+  aff.add("6_4", "w", "1_0", "3_1", "3_3");
 
   return [atlas, aff];
 }

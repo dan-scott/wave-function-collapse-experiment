@@ -1,6 +1,6 @@
 import { ITileAtlas } from "./tileAtlas";
 import { Container, Graphics, Text, TextStyle } from "pixi.js";
-import { idx, TileId } from "./tileId";
+import { idx, TileId, TileIdStr } from "./tileId";
 
 interface IAffinity {
   n: Set<TileId>;
@@ -17,6 +17,9 @@ const contra: Record<Direction, Direction> = {
   e: "w",
   w: "e",
 };
+
+const asId = (i: TileId | TileIdStr) =>
+  typeof i === "object" ? i : TileId.Of(i);
 
 export class AffinityMap {
   readonly #atlas: ITileAtlas;
@@ -41,12 +44,19 @@ export class AffinityMap {
     }
   }
 
-  public add(l: TileId, d: Direction, ...rs: TileId[]) {
-    this.#tileIds.add(l);
+  public add(
+    l: TileId | TileIdStr,
+    d: Direction,
+    ...rs: Array<TileId | TileIdStr>
+  ) {
+    const lId = asId(l);
+    this.#tileIds.add(lId);
+
     rs.forEach((r) => {
-      this.#tileIds.add(r);
-      this.#map[l.id][d].add(r);
-      this.#map[r.id][contra[d]].add(l);
+      const rId = asId(r);
+      this.#tileIds.add(rId);
+      this.#map[lId.id][d].add(rId);
+      this.#map[rId.id][contra[d]].add(lId);
     });
   }
 
@@ -62,87 +72,128 @@ export class AffinityMap {
     centerSprite.scale = { x: 3, y: 3 };
     container.addChild(centerSprite);
 
-    const style = new TextStyle({
-      fill: "white",
-      fontSize: 8,
-      stroke: "red",
-      strokeThickness: 3,
-    });
-
     const txt = new Text(id.id, {
       fill: "white",
       fontSize: 10,
-      stroke: "red",
-      strokeThickness: 3,
     });
     txt.x = x;
     txt.y = y - 20;
     container.addChild(txt);
 
-    const drawId = (t: TileId, x: number, y: number) => {
-      const txt = new Text(t.id, style);
-      txt.x = x;
-      txt.y = y;
-      container.addChild(txt);
-    };
-
     let obj = new Graphics();
-    obj.lineStyle(1, 0xff0000);
-    Array.from(this.#map[id.id].n).forEach((t, i) => {
-      const spr = this.#atlas.spriteAt(t);
-      spr.x = x + i * 25;
-      spr.y = y - 73;
-      container.addChild(spr);
-      obj.drawRect(spr.x - 1, spr.y - 1, 18, 18);
-      drawId(t, spr.x, spr.y - 16);
-    });
+    obj.lineStyle(1, 0xff0000, 1);
 
-    Array.from(this.#map[id.id].s).forEach((t, i) => {
-      const spr = this.#atlas.spriteAt(t);
-      spr.x = x + i * 25;
-      spr.y = y + 100;
-      container.addChild(spr);
-      obj.drawRect(spr.x - 1, spr.y - 1, 18, 18);
-      drawId(t, spr.x, spr.y - 16);
-    });
+    this.drawDirAffinity(id, "n", obj, x + 65, y, container);
+    this.drawDirAffinity(id, "w", obj, x + 65, y + 60, container);
+    this.drawDirAffinity(id, "e", obj, x + 65, y + 100, container);
+    this.drawDirAffinity(id, "s", obj, x + 65, y + 140, container);
 
-    Array.from(this.#map[id.id].e).forEach((t, i) => {
-      const spr = this.#atlas.spriteAt(t);
-      spr.x = x + 100;
-      spr.y = y + i * 25 - 30;
-      container.addChild(spr);
-      obj.drawRect(spr.x - 1, spr.y - 1, 18, 18);
-      drawId(t, spr.x + 16, spr.y);
-    });
-
-    Array.from(this.#map[id.id].w).forEach((t, i) => {
-      const spr = this.#atlas.spriteAt(t);
-      spr.x = x - 73;
-      spr.y = y + i * 25 - 30;
-      container.addChild(spr);
-      obj.drawRect(spr.x - 1, spr.y - 1, 18, 18);
-      drawId(t, spr.x + 16, spr.y);
-    });
     container.addChild(obj);
+  }
+
+  private drawDirAffinity(
+    t: TileId,
+    d: Direction,
+    obj: Graphics,
+    x: number,
+    y: number,
+    container: Container
+  ) {
+    const scale = 1.5;
+    const style = new TextStyle({
+      fill: "white",
+      fontSize: 8,
+    });
+    const dirText = new Text(d, {
+      fill: "white",
+      fontSize: 12,
+    });
+    dirText.x = x - 12;
+    dirText.y = y;
+    container.addChild(dirText);
+
+    const tSize = this.#atlas.TileSize * scale;
+    let nY: CFunc;
+    let nX: CFunc;
+    let tY: CFunc;
+    let tX: CFunc;
+    let lX: CFunc;
+    let lY: CFunc;
+
+    switch (d) {
+      case "n":
+        nY = () => y;
+        nX = (i) => x + i * (tSize + 4);
+        tY = () => y + tSize;
+        tX = nX;
+        lY = () => y - 12;
+        lX = nX;
+        break;
+
+      case "s":
+        nY = () => y + tSize;
+        nX = (i) => x + i * (tSize + 4);
+        tY = () => y;
+        tX = nX;
+        lY = () => y - 12;
+        lX = nX;
+        break;
+
+      case "w":
+        nY = () => y;
+        nX = (i) => x + tSize / 2 + i * (tSize * 2 + 10) - tSize / 2;
+        tY = nY;
+        tX = (i) => nX(i) + tSize;
+        lY = () => y - 12;
+        lX = (i) => nX(i);
+        break;
+
+      case "e":
+        nY = () => y;
+        nX = (i) => x + tSize / 2 + i * (tSize * 2 + 10) + tSize / 2;
+        tY = nY;
+        tX = (i) => nX(i) - tSize;
+        lY = () => y - 12;
+        lX = (i) => tX(i);
+    }
+
+    Array.from(this.#map[t.id][d]).forEach((nt, i) => {
+      const spr = this.#atlas.spriteAt(nt);
+      spr.x = nX(i);
+      spr.y = nY(i);
+      spr.scale = { x: scale, y: scale };
+      container.addChild(spr);
+
+      const tl = this.#atlas.spriteAt(t);
+      tl.x = tX(i);
+      tl.y = tY(i);
+      tl.scale = { x: scale, y: scale };
+      container.addChild(tl);
+
+      obj.drawRect(spr.x, spr.y, tSize, tSize);
+
+      const txt = new Text(nt.id, style);
+      txt.x = lX(i);
+      txt.y = lY(i);
+      container.addChild(txt);
+    });
   }
 
   public drawTiles(x: number, y: number, container: Container, scale = 2) {
     const txtStyle = new TextStyle({
       fill: "white",
-      stroke: "red",
-      strokeThickness: 2,
-      fontSize: 10,
+      fontSize: 8,
     });
 
     Array.from(this.#tileIds).forEach((id, i) => {
       const spr = this.#atlas.spriteAt(id);
-      spr.x = x + (this.#atlas.TileSize + 1) * i * scale;
+      spr.x = x + (this.#atlas.TileSize + 2) * i * scale;
       spr.y = y;
       spr.scale = { x: scale, y: scale };
       container.addChild(spr);
       const txt = new Text(id.id, txtStyle);
       txt.x = spr.x + (this.#atlas.TileSize * scale - txt.width) / 2;
-      txt.y = spr.y - txt.height;
+      txt.y = spr.y - txt.height - 1;
       container.addChild(txt);
     });
   }
@@ -166,4 +217,8 @@ export class AffinityMap {
     toRemove.forEach((t) => targetSuperPosition.delete(t));
     return true;
   }
+}
+
+interface CFunc {
+  (i: number): number;
 }

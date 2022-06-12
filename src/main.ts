@@ -36,13 +36,21 @@ const flipViewMode = () => {
 
 document.body.appendChild(app.view);
 
-function drawWaveFunction(
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function drawWaveFunction(
   affinity: AffinityMap,
   atlas: ITileAtlas,
   container: Container
 ) {
   const wfg = new WaveFunctionGrid({ affinity, atlas, width: 30, height: 30 });
-  while (wfg.step()) {}
+  container.y = 260;
+  while (wfg.step()) {
+    // await delay(1);
+    // const children = container.removeChildren();
+    // children.forEach((c) => c.destroy({ children: true }));
+    // wfg.draw(container);
+  }
   wfg.draw(container);
 }
 
@@ -50,10 +58,10 @@ function drawWaveFunction(
   const [atlas, affinity] = await loadPacked();
 
   let wfgContainer = new Container();
-  // app.stage.addChild(wfgContainer);
-  drawWaveFunction(affinity, atlas, wfgContainer);
+  wfgContainer.y = 260;
 
   let atlasContainer = new Container();
+  atlasContainer.y = 260;
   atlas.draw(0, 0, 2, atlasContainer);
 
   const drawMain = () => {
@@ -68,7 +76,7 @@ function drawWaveFunction(
 
   drawMain();
 
-  affinity.drawTiles(0, 560, app.stage, 1.8);
+  affinity.drawTiles(0, 230, app.stage, 1);
 
   let affinityContainer = new Container();
   app.stage.addChild(affinityContainer);
@@ -107,8 +115,8 @@ function drawWaveFunction(
     app.stage.addChild(affinityContainer);
     affinity.drawTileAffinity(
       affinity.Ids[getViewIdx()],
-      100,
-      700,
+      0,
+      20,
       affinityContainer
     );
   }

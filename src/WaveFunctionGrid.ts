@@ -1,7 +1,7 @@
 import { ITileAtlas } from "./tileAtlas";
 import { AffinityMap, Direction } from "./affinityMap";
 import { TileId } from "./tileId";
-import { Container, Graphics } from "pixi.js";
+import { Container, Graphics, Text } from "pixi.js";
 
 interface Options {
   atlas: ITileAtlas;
@@ -97,6 +97,18 @@ export class WaveFunctionGrid {
   }
 
   private setLowestEntropyCell(): boolean {
+    let b: Array<[number, number]>;
+    if (this.#visited.size === 0) {
+      const i = randIdx(this.#superPos);
+      b = [[i, this.#superPos[i].size]];
+    } else {
+      b = [];
+      Array.from(this.#visited).forEach((v) =>
+        this.unvisitedNeighbours(v).forEach((n) =>
+          b.push([n.pos, this.#superPos[n.pos].size])
+        )
+      );
+    }
     let byEnt = this.#superPos
       .map((s, i) => [i, s.size])
       .filter((t) => t[1] > 1);
@@ -126,6 +138,14 @@ export class WaveFunctionGrid {
           spr.x = xs + 1;
           spr.y = ys + 1;
           container.addChild(spr);
+        } else {
+          const txt = new Text(ts.size, {
+            fill: "red",
+            fontSize: 8,
+          });
+          txt.x = xs + 3;
+          txt.y = ys + 3;
+          container.addChild(txt);
         }
       }
     }
