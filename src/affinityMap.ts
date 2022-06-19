@@ -1,6 +1,6 @@
-import { ITileAtlas } from "./sprites/spriteAtlas";
+import { ITileAtlas } from "./sprites/SpriteAtlas";
 import { Container, Graphics, Text, TextStyle } from "pixi.js";
-import { idx, SpriteId, SpriteIdStr } from "./sprites/spriteId";
+import { idx, SpriteId, SpriteIdStr } from "./sprites/SpriteId";
 
 interface IAffinity {
   n: Set<SpriteId>;

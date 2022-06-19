@@ -3,7 +3,7 @@ import "./style.css";
 import { WaveFunctionGrid } from "./WaveFunctionGrid";
 import { AffinityMap } from "./affinityMap";
 import { loadSimplePlatformer } from "./tilesets/simplePlatformer";
-import { SpriteAtlas } from "./sprites/spriteAtlas";
+import { SpriteAtlas } from "./sprites/SpriteAtlas";
 
 let app = new Application({
   width: window.innerWidth,

@@ -1,7 +1,7 @@
 import { AffinityMap, Direction } from "./affinityMap";
-import { SpriteId } from "./sprites/spriteId";
+import { SpriteId } from "./sprites/SpriteId";
 import { Container, Graphics, Text } from "pixi.js";
-import { SpriteAtlas } from "./sprites/spriteAtlas";
+import { SpriteAtlas } from "./sprites/SpriteAtlas";
 
 interface Options {
   atlas: SpriteAtlas;

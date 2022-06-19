@@ -1,8 +1,8 @@
 import { AffinityMap } from "../affinityMap";
-import { ITileAtlas, loadAtlas } from "../sprites/spriteAtlas";
+import { loadAtlas, SpriteAtlas } from "../sprites/SpriteAtlas";
 import tiles from "../../res/tiles_packed.png";
 
-export async function loadPacked(): Promise<[ITileAtlas, AffinityMap]> {
+export async function loadPacked(): Promise<[SpriteAtlas, AffinityMap]> {
   const atlas = await loadAtlas({
     url: tiles,
     columns: 23,

@@ -8,7 +8,7 @@ import {
   TextStyle,
   Texture,
 } from "pixi.js";
-import { idx, SpriteId } from "./spriteId";
+import { idx, SpriteId, SpriteIdStr } from "./SpriteId";
 
 interface Options {
   url: string;
@@ -66,13 +66,11 @@ export class SpriteAtlas {
     }
   }
 
-  public spriteAt(id: SpriteId): Sprite {
-    if (id.isEmpty) {
-      const spr = new Sprite();
-      spr.width = this.#tileSize;
-      spr.height = this.#tileSize;
+  public spriteAt(id: SpriteId | SpriteIdStr): Sprite {
+    if (typeof id === "object") {
+      return new Sprite(this.#sheet.textures[id.id]);
     }
-    return new Sprite(this.#sheet.textures[id.id]);
+    return new Sprite(this.#sheet.textures[id]);
   }
 
   draw(xp: number, yp: number, scale: number, container: Container): void {
@@ -88,8 +86,8 @@ export class SpriteAtlas {
       for (let y = 0; y < this.#rows; y++) {
         const spr = this.spriteAt(idx(x, y));
         spr.scale = { x: scale, y: scale };
-        spr.x = xp + x * (this.#tileSize + 1) * scale;
-        spr.y = yp + y * (this.#tileSize + 1) * scale;
+        spr.x = xp + x * (this.#tileSize + 2) * scale;
+        spr.y = yp + y * (this.#tileSize + 2) * scale;
         container.addChild(spr);
         const lbl = new Text(`${x}-${y}`, skewStyle);
         lbl.x = spr.x + 8;
