@@ -1,11 +1,11 @@
 import tiles from "../../res/tilesheet.png";
-import { ITileAtlas, loadTileAtlas } from "../tileAtlas";
+import { ITileAtlas, loadAtlas } from "../sprites/spriteAtlas";
 import { AffinityMap } from "../affinityMap";
 
 export async function loadSimplePlatformer(): Promise<
   [ITileAtlas, AffinityMap]
 > {
-  const atlas = await loadTileAtlas({
+  const atlas = await loadAtlas({
     url: tiles,
     columns: 9,
     rows: 3,

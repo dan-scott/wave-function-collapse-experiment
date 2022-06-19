@@ -2,8 +2,8 @@ import { Application, Container } from "pixi.js";
 import "./style.css";
 import { WaveFunctionGrid } from "./WaveFunctionGrid";
 import { AffinityMap } from "./affinityMap";
-import { ITileAtlas } from "./tileAtlas";
 import { loadSimplePlatformer } from "./tilesets/simplePlatformer";
+import { SpriteAtlas } from "./sprites/spriteAtlas";
 
 let app = new Application({
   width: window.innerWidth,
@@ -40,7 +40,7 @@ document.body.appendChild(app.view);
 
 async function drawWaveFunction(
   affinity: AffinityMap,
-  atlas: ITileAtlas,
+  atlas: SpriteAtlas,
   container: Container
 ) {
   const wfg = new WaveFunctionGrid({ affinity, atlas, width: 15, height: 15 });

@@ -1,10 +1,10 @@
-import { ITileAtlas } from "./tileAtlas";
 import { AffinityMap, Direction } from "./affinityMap";
-import { TileId } from "./tileId";
+import { SpriteId } from "./sprites/spriteId";
 import { Container, Graphics, Text } from "pixi.js";
+import { SpriteAtlas } from "./sprites/spriteAtlas";
 
 interface Options {
-  atlas: ITileAtlas;
+  atlas: SpriteAtlas;
   affinity: AffinityMap;
   width: number;
   height: number;
@@ -19,12 +19,12 @@ const randItem = <T>(i: Iterable<T>): T => {
 };
 
 export class WaveFunctionGrid {
-  readonly #atlas: ITileAtlas;
+  readonly #atlas: SpriteAtlas;
   readonly #affinity: AffinityMap;
   readonly #width: number;
   readonly #height: number;
 
-  readonly #superPos: Array<Set<TileId>>;
+  readonly #superPos: Array<Set<SpriteId>>;
 
   #visited: Set<number>;
   #modified: Set<number>;

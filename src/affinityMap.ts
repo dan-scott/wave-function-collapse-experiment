@@ -1,12 +1,12 @@
-import { ITileAtlas } from "./tileAtlas";
+import { ITileAtlas } from "./sprites/spriteAtlas";
 import { Container, Graphics, Text, TextStyle } from "pixi.js";
-import { idx, TileId, TileIdStr } from "./tileId";
+import { idx, SpriteId, SpriteIdStr } from "./sprites/spriteId";
 
 interface IAffinity {
-  n: Set<TileId>;
-  s: Set<TileId>;
-  e: Set<TileId>;
-  w: Set<TileId>;
+  n: Set<SpriteId>;
+  s: Set<SpriteId>;
+  e: Set<SpriteId>;
+  w: Set<SpriteId>;
 }
 
 export type Direction = keyof IAffinity;
@@ -18,13 +18,13 @@ const contra: Record<Direction, Direction> = {
   w: "e",
 };
 
-const asId = (i: TileId | TileIdStr | "empty") =>
-  i === "empty" ? TileId.Empty() : typeof i === "object" ? i : TileId.Of(i);
+const asId = (i: SpriteId | SpriteIdStr | "empty") =>
+  i === "empty" ? SpriteId.Empty() : typeof i === "object" ? i : SpriteId.Of(i);
 
 export class AffinityMap {
   readonly #atlas: ITileAtlas;
   readonly #map: Record<string, IAffinity> = {};
-  readonly #tileIds: Set<TileId> = new Set<TileId>();
+  readonly #tileIds: Set<SpriteId> = new Set<SpriteId>();
 
   public get Ids() {
     return Array.from(this.#tileIds);
@@ -32,7 +32,7 @@ export class AffinityMap {
 
   public constructor(atlas: ITileAtlas) {
     this.#atlas = atlas;
-    this.#map[TileId.Empty().id] = {
+    this.#map[SpriteId.Empty().id] = {
       n: new Set(),
       s: new Set(),
       e: new Set(),
@@ -51,9 +51,9 @@ export class AffinityMap {
   }
 
   public add(
-    l: TileId | TileIdStr | "empty",
+    l: SpriteId | SpriteIdStr | "empty",
     d: Direction,
-    ...rs: Array<TileId | TileIdStr | "empty">
+    ...rs: Array<SpriteId | SpriteIdStr | "empty">
   ) {
     const lId = asId(l);
     this.#tileIds.add(lId);
@@ -67,7 +67,7 @@ export class AffinityMap {
   }
 
   public drawTileAffinity(
-    id: TileId,
+    id: SpriteId,
     x: number,
     y: number,
     container: Container,
@@ -125,7 +125,7 @@ export class AffinityMap {
   }
 
   private drawDirAffinity(
-    t: TileId,
+    t: SpriteId,
     d: Direction,
     obj: Graphics,
     x: number,
@@ -232,14 +232,14 @@ export class AffinityMap {
   }
 
   intersection(
-    sourceTiles: Set<TileId>,
+    sourceTiles: Set<SpriteId>,
     direction: Direction,
-    targetSuperPosition: Set<TileId>
+    targetSuperPosition: Set<SpriteId>
   ) {
     if (!sourceTiles.size) {
       return false;
     }
-    const allValid = new Set<TileId>();
+    const allValid = new Set<SpriteId>();
     sourceTiles.forEach((v) => {
       this.#map[v.id][direction].forEach((t) => allValid.add(t));
     });

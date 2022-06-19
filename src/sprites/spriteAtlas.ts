@@ -6,8 +6,9 @@ import {
   Spritesheet,
   Text,
   TextStyle,
+  Texture,
 } from "pixi.js";
-import { idx, TileId } from "./tileId";
+import { idx, SpriteId } from "./spriteId";
 
 interface Options {
   url: string;
@@ -16,20 +17,13 @@ interface Options {
   tileSize: number;
 }
 
-export interface ITileAtlas {
-  readonly Rows: number;
-  readonly Columns: number;
-  readonly TileSize: number;
-  draw(x: number, y: number, scale: number, container: Container): void;
-  spriteAt(id: TileId): Sprite;
-}
-
-class TileAtlas implements ITileAtlas {
+export class SpriteAtlas {
   readonly #sheet: Spritesheet;
   readonly #base: BaseTexture;
   readonly #columns: number;
   readonly #rows: number;
   readonly #tileSize: number;
+  readonly #empty: Sprite;
 
   public get SpriteSheet() {
     return this.#sheet;
@@ -46,22 +40,33 @@ class TileAtlas implements ITileAtlas {
   public get TileSize() {
     return this.#tileSize;
   }
+  public get Empty() {
+    return this.#empty;
+  }
 
   constructor(
     sheet: Spritesheet,
     base: BaseTexture,
     columns: number,
     rows: number,
-    tileSize: number
+    tileSize: number,
+    emptySprite?: SpriteId
   ) {
     this.#sheet = sheet;
     this.#base = base;
     this.#columns = columns;
     this.#rows = rows;
     this.#tileSize = tileSize;
+    if (emptySprite) {
+      this.#empty = this.spriteAt(emptySprite);
+    } else {
+      this.#empty = new Sprite(Texture.EMPTY);
+      this.#empty.width = this.#tileSize;
+      this.#empty.height = this.#tileSize;
+    }
   }
 
-  public spriteAt(id: TileId): Sprite {
+  public spriteAt(id: SpriteId): Sprite {
     if (id.isEmpty) {
       const spr = new Sprite();
       spr.width = this.#tileSize;
@@ -95,16 +100,16 @@ class TileAtlas implements ITileAtlas {
   }
 }
 
-export function loadTileAtlas({
+export function loadAtlas({
   url,
   columns,
   rows,
   tileSize,
-}: Options): Promise<ITileAtlas> {
+}: Options): Promise<SpriteAtlas> {
   const bt = BaseTexture.from(url);
   const sh = new Spritesheet(bt, spriteDataOf(columns, rows, tileSize));
   return new Promise((resolve) => {
-    sh.parse(() => resolve(new TileAtlas(sh, bt, columns, rows, tileSize)));
+    sh.parse(() => resolve(new SpriteAtlas(sh, bt, columns, rows, tileSize)));
   });
 }
 
