@@ -62,6 +62,11 @@ class TileAtlas implements ITileAtlas {
   }
 
   public spriteAt(id: TileId): Sprite {
+    if (id.isEmpty) {
+      const spr = new Sprite();
+      spr.width = this.#tileSize;
+      spr.height = this.#tileSize;
+    }
     return new Sprite(this.#sheet.textures[id.id]);
   }
 
@@ -74,8 +79,8 @@ class TileAtlas implements ITileAtlas {
       strokeThickness: 2,
       stroke: "red",
     });
-    for (let x = 0; x < 23; x++) {
-      for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < this.#columns; x++) {
+      for (let y = 0; y < this.#rows; y++) {
         const spr = this.spriteAt(idx(x, y));
         spr.scale = { x: scale, y: scale };
         spr.x = xp + x * (this.#tileSize + 1) * scale;

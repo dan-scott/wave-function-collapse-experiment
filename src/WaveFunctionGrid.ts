@@ -97,18 +97,6 @@ export class WaveFunctionGrid {
   }
 
   private setLowestEntropyCell(): boolean {
-    let b: Array<[number, number]>;
-    if (this.#visited.size === 0) {
-      const i = randIdx(this.#superPos);
-      b = [[i, this.#superPos[i].size]];
-    } else {
-      b = [];
-      Array.from(this.#visited).forEach((v) =>
-        this.unvisitedNeighbours(v).forEach((n) =>
-          b.push([n.pos, this.#superPos[n.pos].size])
-        )
-      );
-    }
     let byEnt = this.#superPos
       .map((s, i) => [i, s.size])
       .filter((t) => t[1] > 1);
@@ -127,17 +115,22 @@ export class WaveFunctionGrid {
     return true;
   }
 
-  public draw(container: Container) {
+  public draw(container: Container, scale = 1) {
     for (let x = 0; x < this.#width; x++) {
       for (let y = 0; y < this.#height; y++) {
-        const xs = x * this.#atlas.TileSize;
-        const ys = y * this.#atlas.TileSize;
+        const xs = x * this.#atlas.TileSize * scale;
+        const ys = y * this.#atlas.TileSize * scale;
         const ts = this.#superPos[this.idx(x, y)];
         if (ts.size === 1) {
-          const spr = this.#atlas.spriteAt(ts.values().next().value);
-          spr.x = xs + 1;
-          spr.y = ys + 1;
-          container.addChild(spr);
+          const id = [...ts.values()][0];
+          if (!id.isEmpty) {
+            const spr = this.#atlas.spriteAt(id);
+            spr.x = xs + 1;
+            spr.y = ys + 1;
+            spr.scale = { x: scale, y: scale };
+
+            container.addChild(spr);
+          }
         } else {
           const txt = new Text(ts.size, {
             fill: "red",
@@ -154,8 +147,8 @@ export class WaveFunctionGrid {
     bounds.drawRect(
       0,
       0,
-      this.#width * this.#atlas.TileSize + 1,
-      this.#height * this.#atlas.TileSize + 1
+      this.#width * this.#atlas.TileSize * scale + 1,
+      this.#height * this.#atlas.TileSize * scale + 1
     );
     container.addChild(bounds);
   }

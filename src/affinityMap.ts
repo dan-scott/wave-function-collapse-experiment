@@ -18,8 +18,8 @@ const contra: Record<Direction, Direction> = {
   w: "e",
 };
 
-const asId = (i: TileId | TileIdStr) =>
-  typeof i === "object" ? i : TileId.Of(i);
+const asId = (i: TileId | TileIdStr | "empty") =>
+  i === "empty" ? TileId.Empty() : typeof i === "object" ? i : TileId.Of(i);
 
 export class AffinityMap {
   readonly #atlas: ITileAtlas;
@@ -32,6 +32,12 @@ export class AffinityMap {
 
   public constructor(atlas: ITileAtlas) {
     this.#atlas = atlas;
+    this.#map[TileId.Empty().id] = {
+      n: new Set(),
+      s: new Set(),
+      e: new Set(),
+      w: new Set(),
+    };
     for (let x = 0; x < atlas.Columns; x++) {
       for (let y = 0; y < atlas.Rows; y++) {
         this.#map[idx(x, y).id] = {
@@ -45,9 +51,9 @@ export class AffinityMap {
   }
 
   public add(
-    l: TileId | TileIdStr,
+    l: TileId | TileIdStr | "empty",
     d: Direction,
-    ...rs: Array<TileId | TileIdStr>
+    ...rs: Array<TileId | TileIdStr | "empty">
   ) {
     const lId = asId(l);
     this.#tileIds.add(lId);
@@ -64,12 +70,13 @@ export class AffinityMap {
     id: TileId,
     x: number,
     y: number,
-    container: Container
+    container: Container,
+    scale: number = 1
   ) {
     const centerSprite = this.#atlas.spriteAt(id);
     centerSprite.x = x;
     centerSprite.y = y;
-    centerSprite.scale = { x: 3, y: 3 };
+    centerSprite.scale = { x: scale, y: scale };
     container.addChild(centerSprite);
 
     const txt = new Text(id.id, {
@@ -82,11 +89,37 @@ export class AffinityMap {
 
     let obj = new Graphics();
     obj.lineStyle(1, 0xff0000, 1);
+    const offsetX = centerSprite.width + 15;
+    const offsetY = (this.#atlas.TileSize * scale) / 2 + 15;
 
-    this.drawDirAffinity(id, "n", obj, x + 65, y, container);
-    this.drawDirAffinity(id, "w", obj, x + 65, y + 60, container);
-    this.drawDirAffinity(id, "e", obj, x + 65, y + 100, container);
-    this.drawDirAffinity(id, "s", obj, x + 65, y + 140, container);
+    this.drawDirAffinity(id, "n", obj, x + offsetX, y, container, scale / 2);
+    this.drawDirAffinity(
+      id,
+      "w",
+      obj,
+      x + offsetX,
+      y + offsetY * 2,
+      container,
+      scale / 2
+    );
+    this.drawDirAffinity(
+      id,
+      "e",
+      obj,
+      x + offsetX,
+      y + offsetY * 3,
+      container,
+      scale / 2
+    );
+    this.drawDirAffinity(
+      id,
+      "s",
+      obj,
+      x + offsetX,
+      y + offsetY * 4,
+      container,
+      scale / 2
+    );
 
     container.addChild(obj);
   }
@@ -97,9 +130,9 @@ export class AffinityMap {
     obj: Graphics,
     x: number,
     y: number,
-    container: Container
+    container: Container,
+    scale: number = 1
   ) {
-    const scale = 1.5;
     const style = new TextStyle({
       fill: "white",
       fontSize: 8,

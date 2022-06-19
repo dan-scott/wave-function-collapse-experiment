@@ -21,6 +21,10 @@ export class TileId {
     return this.#id;
   }
 
+  public get isEmpty() {
+    return this === TileId.Empty();
+  }
+
   private constructor(x: number, y: number, id: TileIdStr) {
     this.#x = x;
     this.#y = y;
@@ -44,6 +48,10 @@ export class TileId {
       );
     }
     return idxDict[id];
+  }
+
+  public static Empty(): TileId {
+    return TileId.Of({ x: -1, y: -1 });
   }
 }
 

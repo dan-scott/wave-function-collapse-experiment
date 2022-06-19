@@ -1,9 +1,9 @@
 import { Application, Container } from "pixi.js";
 import "./style.css";
-import { loadPacked } from "./tilesets/packedRpg";
 import { WaveFunctionGrid } from "./WaveFunctionGrid";
 import { AffinityMap } from "./affinityMap";
 import { ITileAtlas } from "./tileAtlas";
+import { loadSimplePlatformer } from "./tilesets/simplePlatformer";
 
 let app = new Application({
   width: window.innerWidth,
@@ -43,26 +43,26 @@ async function drawWaveFunction(
   atlas: ITileAtlas,
   container: Container
 ) {
-  const wfg = new WaveFunctionGrid({ affinity, atlas, width: 30, height: 30 });
-  container.y = 260;
+  const wfg = new WaveFunctionGrid({ affinity, atlas, width: 15, height: 15 });
+  container.y = 280;
   while (wfg.step()) {
     // await delay(1);
     // const children = container.removeChildren();
     // children.forEach((c) => c.destroy({ children: true }));
     // wfg.draw(container);
   }
-  wfg.draw(container);
+  wfg.draw(container, 0.5);
 }
 
 (async () => {
-  const [atlas, affinity] = await loadPacked();
+  const [atlas, affinity] = await loadSimplePlatformer();
 
   let wfgContainer = new Container();
   wfgContainer.y = 260;
 
   let atlasContainer = new Container();
-  atlasContainer.y = 260;
-  atlas.draw(0, 0, 2, atlasContainer);
+  atlasContainer.y = 280;
+  atlas.draw(0, 0, 1, atlasContainer);
 
   const drawMain = () => {
     if (getViewMode() === "atlas") {
@@ -76,7 +76,7 @@ async function drawWaveFunction(
 
   drawMain();
 
-  affinity.drawTiles(0, 230, app.stage, 1);
+  // affinity.drawTiles(0, 230, app.stage, 0.8);
 
   let affinityContainer = new Container();
   app.stage.addChild(affinityContainer);
@@ -117,7 +117,8 @@ async function drawWaveFunction(
       affinity.Ids[getViewIdx()],
       0,
       20,
-      affinityContainer
+      affinityContainer,
+      1
     );
   }
 })();
