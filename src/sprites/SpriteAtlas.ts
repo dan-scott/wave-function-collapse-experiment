@@ -8,7 +8,8 @@ import {
   TextStyle,
   Texture,
 } from "pixi.js";
-import { idx, SpriteId, SpriteIdStr } from "./SpriteId";
+
+export type SpriteId = number;
 
 interface Options {
   url: string;
@@ -66,11 +67,8 @@ export class SpriteAtlas {
     }
   }
 
-  public spriteAt(id: SpriteId | SpriteIdStr): Sprite {
-    if (typeof id === "object") {
-      return new Sprite(this.#sheet.textures[id.id]);
-    }
-    return new Sprite(this.#sheet.textures[id]);
+  public spriteAt(id: SpriteId): Sprite {
+    return new Sprite(this.#sheet.textures[`s${id}`]);
   }
 
   draw(xp: number, yp: number, scale: number, container: Container): void {
@@ -84,7 +82,7 @@ export class SpriteAtlas {
     });
     for (let x = 0; x < this.#columns; x++) {
       for (let y = 0; y < this.#rows; y++) {
-        const spr = this.spriteAt(idx(x, y));
+        const spr = this.spriteAt(x + y * this.#columns);
         spr.scale = { x: scale, y: scale };
         spr.x = xp + x * (this.#tileSize + 2) * scale;
         spr.y = yp + y * (this.#tileSize + 2) * scale;
@@ -119,7 +117,8 @@ function spriteDataOf(
   const frames: ISpritesheetData["frames"] = {};
   for (let x = 0; x < columns; x++) {
     for (let y = 0; y < rows; y++) {
-      frames[idx(x, y).id] = {
+      const id = `s${x + y * columns}`;
+      frames[id] = {
         frame: {
           x: x * size,
           y: y * size,
