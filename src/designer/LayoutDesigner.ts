@@ -1,8 +1,9 @@
 import { Container, Graphics } from "pixi.js";
-import { TileId, TileSet } from "../tilesets/TileSet";
-import { Coordinate, crd } from "../coord";
+import { Tile, TileId, TileSet } from "../tilesets/TileSet";
 import { SpriteAtlas } from "../sprites/SpriteAtlas";
 import { SpriteIdStr } from "../sprites/SpriteId";
+
+export type LayoutDesignerAction = SpriteAction | LayoutAction;
 
 interface Options {
   width: number;
@@ -16,23 +17,153 @@ const defaultOptions: Options = {
 
 export class LayoutDesigner extends Container {
   readonly #tileSet: TileSet;
+  readonly #layout: Layout;
   readonly #options: Options;
-  readonly #selected: Coordinate;
   readonly #tileSelector: TileSelector;
+  #currentTilePreview: Tile;
 
   constructor(atlas: SpriteAtlas, opts: Partial<Options> = {}) {
     super();
     this.#tileSet = new TileSet(atlas);
     this.#options = { ...defaultOptions, ...opts };
-    this.#selected = crd(0, 0);
 
     this.#tileSelector = new TileSelector(atlas);
+    this.#tileSelector.scale = { x: 0.5, y: 0.5 };
     this.addChild(this.#tileSelector);
+
+    this.#currentTilePreview = this.#tileSet.GetTile("empty");
+    this.addChild(this.#currentTilePreview);
+
+    this.#layout = new Layout(
+      this.#tileSet,
+      this.#options.width,
+      this.#options.height,
+      atlas.TileSize
+    );
+    this.addChild(this.#layout);
+    this.#layout.y = this.#tileSelector.height + 5;
   }
 
   act(action: LayoutDesignerAction) {
     this.#tileSelector.act(action);
+    this.#updateSelectedTile();
+    this.#layout.act(action);
   }
+
+  #updateSelectedTile() {
+    this.removeChild(this.#currentTilePreview);
+    this.#currentTilePreview.destroy();
+    this.#currentTilePreview = this.#tileSet.GetTile(this.#tileSelector.TileId);
+    this.#currentTilePreview.x = this.#tileSelector.width + 5;
+    this.addChild(this.#currentTilePreview);
+    this.#layout.StampTileId = this.#tileSelector.TileId;
+  }
+}
+
+class Layout extends Container {
+  readonly #grid: { tid: TileId; tile: Tile }[][];
+  readonly #columns: number;
+  readonly #rows: number;
+  readonly #tileSize: number;
+  readonly #current: [number, number];
+  readonly #highlight: Graphics;
+  readonly #tileSet: TileSet;
+  StampTileId: TileId = "empty";
+
+  constructor(
+    tileSet: TileSet,
+    width: number,
+    height: number,
+    tileSize: number
+  ) {
+    super();
+    this.#tileSet = tileSet;
+    this.#columns = width;
+    this.#rows = height;
+    this.#tileSize = tileSize;
+    this.#grid = [];
+    for (let col = 0; col < this.#columns; col++) {
+      this.#grid[col] = [];
+      for (let row = 0; row < this.#rows; row++) {
+        this.#grid[col][row] = {
+          tid: "empty",
+          tile: this.#tileSet.GetTile("empty"),
+        };
+      }
+    }
+    this.#current = [0, 0];
+    this.#highlight = new Graphics();
+    this.#highlight.lineStyle(1, 0xff0000, 0.8);
+    this.#highlight.drawRect(0, 0, tileSize, tileSize);
+    this.addChild(this.#highlight);
+
+    const frame = new Graphics();
+    frame.lineStyle(3, 0xffffff, 1);
+    frame.drawRect(0, 0, tileSize * width, tileSize * height);
+    this.addChild(frame);
+  }
+
+  act(action: LayoutDesignerAction) {
+    switch (action.type) {
+      case "layout_cell_down":
+        this.#current[1] = (this.#current[1] + 1) % this.#rows;
+        break;
+      case "layout_cell_up":
+        this.#current[1] = (this.#current[1] + this.#rows - 1) % this.#rows;
+        break;
+      case "layout_cell_left":
+        this.#current[0] =
+          (this.#current[0] + this.#columns - 1) % this.#columns;
+        break;
+      case "layout_cell_right":
+        this.#current[0] = (this.#current[0] + 1) % this.#columns;
+        break;
+      case "layout_cell_stamp_selected_tile":
+        const cell = this.#grid[this.#current[0]][this.#current[1]];
+        this.removeChild(cell.tile);
+        cell.tid = this.StampTileId;
+        cell.tile = this.#tileSet.GetTile(cell.tid);
+        cell.tile.x = this.#current[0] * this.#tileSize;
+        cell.tile.y = this.#current[1] * this.#tileSize;
+        this.addChild(cell.tile);
+        break;
+      default:
+        break;
+    }
+    this.#updateSelected();
+  }
+
+  #updateSelected() {
+    this.#highlight.x = this.#current[0] * this.#tileSize;
+    this.#highlight.y = this.#current[1] * this.#tileSize;
+  }
+}
+
+type LayoutAction =
+  | LayoutCellUp
+  | LayoutCellDown
+  | LayoutCellLeft
+  | LayoutCellRight
+  | LayoutCellStampSelected;
+
+interface LayoutCellUp {
+  type: "layout_cell_up";
+}
+
+interface LayoutCellDown {
+  type: "layout_cell_down";
+}
+
+interface LayoutCellLeft {
+  type: "layout_cell_left";
+}
+
+interface LayoutCellRight {
+  type: "layout_cell_right";
+}
+
+interface LayoutCellStampSelected {
+  type: "layout_cell_stamp_selected_tile";
 }
 
 const asTid = ([x, y]: [number, number]): SpriteIdStr => `${x}_${y}`;
@@ -71,7 +202,7 @@ class TileSelector extends Container {
     this.#currentTile = [0, 0];
     this.#currentHighlight = new Graphics();
     this.#currentHighlight.name = "current_highlight";
-    this.#currentHighlight.lineStyle(1, 0xff0000, 1);
+    this.#currentHighlight.lineStyle(2, 0xff0000, 1);
     this.#currentHighlight.drawRect(
       0,
       0,
@@ -82,7 +213,7 @@ class TileSelector extends Container {
 
     this.#primaryHighlight = new Graphics();
     this.#primaryHighlight.name = "primary_highlight";
-    this.#primaryHighlight.lineStyle(1, 0x0000ff, 0.8);
+    this.#primaryHighlight.lineStyle(2, 0x0000ff, 0.8);
     this.#primaryHighlight.drawRect(
       2,
       2,
@@ -92,7 +223,7 @@ class TileSelector extends Container {
 
     this.#secondaryHighlight = new Graphics();
     this.#secondaryHighlight.name = "secondary_highlight";
-    this.#secondaryHighlight.lineStyle(1, 0x00ff00, 0.8);
+    this.#secondaryHighlight.lineStyle(2, 0x00ff00, 0.8);
     this.#secondaryHighlight.drawRect(
       4,
       4,
@@ -123,15 +254,17 @@ class TileSelector extends Container {
         break;
       case "sprite_swap_primary_secondary":
         this.#swap();
+        break;
       default:
         break;
     }
+    this.#updateHighlights();
   }
 
   #updateHighlights() {
-    this.#updateHighlight(this.#currentHighlight, 1, this.#currentTile);
-    this.#updateHighlight(this.#primaryHighlight, 5, this.#primaryTile);
-    this.#updateHighlight(this.#secondaryHighlight, 9, this.#secondaryTile);
+    this.#updateHighlight(this.#currentHighlight, 0, this.#currentTile);
+    this.#updateHighlight(this.#primaryHighlight, 4, this.#primaryTile);
+    this.#updateHighlight(this.#secondaryHighlight, 8, this.#secondaryTile);
   }
 
   #updateHighlight(hgl: Graphics, offset: number, pos?: [number, number]) {
@@ -151,23 +284,19 @@ class TileSelector extends Container {
   #spriteUp() {
     this.#currentTile[1] =
       (this.#currentTile[1] + this.#atlas.Rows - 1) % this.#atlas.Rows;
-    this.#updateHighlights();
   }
 
   #spriteDown() {
     this.#currentTile[1] = (this.#currentTile[1] + 1) % this.#atlas.Rows;
-    this.#updateHighlights();
   }
 
   #spriteLeft() {
     this.#currentTile[0] =
       (this.#currentTile[0] + this.#atlas.Columns - 1) % this.#atlas.Columns;
-    this.#updateHighlights();
   }
 
   #spriteRight() {
     this.#currentTile[0] = (this.#currentTile[0] + 1) % this.#atlas.Columns;
-    this.#updateHighlights();
   }
 
   #togglePrimary() {
@@ -182,7 +311,6 @@ class TileSelector extends Container {
         this.#secondaryTile = undefined;
       }
     }
-    this.#updateHighlights();
   }
 
   #toggleSecondary() {
@@ -197,7 +325,6 @@ class TileSelector extends Container {
       // secondary is either not set, or we're changing it
       this.#secondaryTile = [...this.#currentTile];
     }
-    this.#updateHighlights();
   }
 
   #swap() {
@@ -208,8 +335,6 @@ class TileSelector extends Container {
     }
   }
 }
-
-export type LayoutDesignerAction = SpriteAction;
 
 type SpriteAction =
   | SpriteUp

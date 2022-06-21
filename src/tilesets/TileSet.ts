@@ -4,7 +4,7 @@ import { Container } from "pixi.js";
 
 export type TileId = SpriteIdStr | `${SpriteIdStr}-${SpriteIdStr}` | "empty";
 
-class Tile extends Container {
+export class Tile extends Container {
   readonly #spriteIds: Array<SpriteIdStr>;
 
   public get SpriteIds() {
@@ -29,7 +29,7 @@ function isSpriteIdStr(id: TileId): id is SpriteIdStr {
   if (id === "empty") {
     return false;
   }
-  return id.includes("-");
+  return !id.includes("-");
 }
 
 export class TileSet {

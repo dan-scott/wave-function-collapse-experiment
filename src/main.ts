@@ -23,6 +23,11 @@ const keymap: Record<string, LayoutDesignerAction["type"]> = {
   "[": "sprite_toggle_primary",
   "]": "sprite_toggle_secondary",
   ",": "sprite_swap_primary_secondary",
+  w: "layout_cell_up",
+  s: "layout_cell_down",
+  a: "layout_cell_left",
+  d: "layout_cell_right",
+  " ": "layout_cell_stamp_selected_tile",
 };
 
 (async () => {
@@ -36,10 +41,10 @@ const keymap: Record<string, LayoutDesignerAction["type"]> = {
   const designer = new LayoutDesigner(atlas);
   designer.x = 3;
   designer.y = 3;
-  designer.scale = { x: 2, y: 2 };
   app.stage.addChild(designer);
 
   window.addEventListener("keydown", (evt) => {
+    console.log(evt.key);
     if (keymap[evt.key]) {
       designer.act({ type: keymap[evt.key] });
     }
