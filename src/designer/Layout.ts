@@ -2,39 +2,46 @@ import { Container, Graphics } from "pixi.js";
 import { Tile, TileId, TileSet } from "../tilesets/TileSet";
 import { Action } from "../Action";
 import { LayoutDesignerAction } from "./LayoutDesigner";
+import { GridNav } from "./GridNav";
 
 export class Layout extends Container {
-  readonly #grid: { tid: TileId; tile: Tile }[][];
+  readonly #grid: { tid: TileId; tile: Tile }[];
   readonly #columns: number;
   readonly #rows: number;
   readonly #tileSize: number;
-  readonly #current: [number, number];
+  readonly #nav: GridNav;
   readonly #highlight: Graphics;
   readonly #tileSet: TileSet;
+  readonly #gridContainer: Container;
   StampTileId: TileId = "empty";
 
   constructor(
     tileSet: TileSet,
-    width: number,
-    height: number,
+    columns: number,
+    rows: number,
     tileSize: number
   ) {
     super();
     this.#tileSet = tileSet;
-    this.#columns = width;
-    this.#rows = height;
+    this.#columns = columns;
+    this.#rows = rows;
     this.#tileSize = tileSize;
     this.#grid = [];
+    this.#gridContainer = new Container();
+    this.addChild(this.#gridContainer);
     for (let col = 0; col < this.#columns; col++) {
-      this.#grid[col] = [];
       for (let row = 0; row < this.#rows; row++) {
-        this.#grid[col][row] = {
+        this.#grid[col + row * columns] = {
           tid: "empty",
           tile: this.#tileSet.GetTile("empty"),
         };
       }
     }
-    this.#current = [0, 0];
+    this.#nav = new GridNav({
+      rows,
+      columns,
+      onChange: (n) => this.#updateSelected(n.XY),
+    });
     this.#highlight = new Graphics();
     this.#highlight.lineStyle(1, 0xff0000, 0.8);
     this.#highlight.drawRect(0, 0, tileSize, tileSize);
@@ -42,21 +49,47 @@ export class Layout extends Container {
 
     const frame = new Graphics();
     frame.lineStyle(3, 0xffffff, 1);
-    frame.drawRect(0, 0, tileSize * width, tileSize * height);
+    frame.drawRect(0, 0, tileSize * columns, tileSize * rows);
     this.addChild(frame);
   }
 
   act(action: LayoutDesignerAction) {
     switch (action.type) {
+      case "Layout::cell::up":
+        this.#nav.up();
+        break;
+      case "Layout::cell::down":
+        this.#nav.down();
+        break;
+      case "Layout::cell::left":
+        this.#nav.left();
+        break;
+      case "Layout::cell::right":
+        this.#nav.right();
+        break;
+      case "Layout::cell::stamp":
+        this.#stamp();
+        break;
       default:
         break;
     }
-    this.#updateSelected();
   }
 
-  #updateSelected() {
-    this.#highlight.x = this.#current[0] * this.#tileSize;
-    this.#highlight.y = this.#current[1] * this.#tileSize;
+  #updateSelected([x, y]: [number, number]) {
+    this.#highlight.x = x * this.#tileSize;
+    this.#highlight.y = y * this.#tileSize;
+  }
+
+  #stamp() {
+    const cell = this.#grid[this.#nav.Idx];
+    this.#gridContainer.removeChild(cell.tile);
+    cell.tid = this.StampTileId;
+    cell.tile.destroy();
+    cell.tile = this.#tileSet.GetTile(cell.tid);
+    const [x, y] = this.#nav.XY;
+    cell.tile.x = x * this.#tileSize;
+    cell.tile.y = y * this.#tileSize;
+    this.#gridContainer.addChild(cell.tile);
   }
 }
 

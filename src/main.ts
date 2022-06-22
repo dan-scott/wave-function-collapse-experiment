@@ -33,7 +33,13 @@ const altMap: Record<string, LayoutDesignerAction["type"]> = {
   KeyS: "TileSelector::sprites::swap",
 };
 
-const keymap: Record<string, LayoutDesignerAction["type"]> = {};
+const keymap: Record<string, LayoutDesignerAction["type"]> = {
+  ArrowUp: "Layout::cell::up",
+  ArrowDown: "Layout::cell::down",
+  ArrowLeft: "Layout::cell::left",
+  ArrowRight: "Layout::cell::right",
+  Space: "Layout::cell::stamp",
+};
 
 (async () => {
   const atlas = await loadAtlas({
