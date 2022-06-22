@@ -3,6 +3,7 @@ import { Tile, TileId, TileSet } from "../tilesets/TileSet";
 import { Action } from "../Action";
 import { LayoutDesignerAction } from "./LayoutDesigner";
 import { GridNav } from "./GridNav";
+import { getStoreVal, setGridCell, setStoreVal } from "../Store";
 
 export class Layout extends Container {
   readonly #grid: { tid: TileId; tile: Tile }[];
@@ -29,12 +30,16 @@ export class Layout extends Container {
     this.#grid = [];
     this.#gridContainer = new Container();
     this.addChild(this.#gridContainer);
+    const grid = getStoreVal("grid");
     for (let col = 0; col < this.#columns; col++) {
       for (let row = 0; row < this.#rows; row++) {
-        this.#grid[col + row * columns] = {
-          tid: "empty",
-          tile: this.#tileSet.GetTile("empty"),
-        };
+        const idx = col + row * columns;
+        const tid = grid[idx] ?? "empty";
+        const tile = this.#tileSet.GetTile(tid);
+        tile.x = col * tileSize;
+        tile.y = row * tileSize;
+        this.#grid[idx] = { tid, tile };
+        this.#gridContainer.addChild(tile);
       }
     }
     this.#nav = new GridNav({
@@ -51,6 +56,7 @@ export class Layout extends Container {
     frame.lineStyle(3, 0xffffff, 1);
     frame.drawRect(0, 0, tileSize * columns, tileSize * rows);
     this.addChild(frame);
+    this.#nav.Idx = getStoreVal("cell");
   }
 
   act(action: LayoutDesignerAction) {
@@ -78,6 +84,7 @@ export class Layout extends Container {
   #updateSelected([x, y]: [number, number]) {
     this.#highlight.x = x * this.#tileSize;
     this.#highlight.y = y * this.#tileSize;
+    setStoreVal("cell", this.#nav.Idx);
   }
 
   #stamp() {
@@ -90,6 +97,7 @@ export class Layout extends Container {
     cell.tile.x = x * this.#tileSize;
     cell.tile.y = y * this.#tileSize;
     this.#gridContainer.addChild(cell.tile);
+    setGridCell(this.#nav.Idx, cell.tid);
   }
 }
 

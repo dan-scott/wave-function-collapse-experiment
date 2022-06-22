@@ -3,30 +3,19 @@ import { Tile, TileSet } from "../tilesets/TileSet";
 import { SpriteAtlas } from "../sprites/SpriteAtlas";
 import { SpriteAction, TileSelector } from "./TileSelector";
 import { Layout, LayoutAction } from "./Layout";
+import { getStoreVal } from "../Store";
 
 export type LayoutDesignerAction = SpriteAction | LayoutAction;
-
-interface Options {
-  width: number;
-  height: number;
-}
-
-const defaultOptions: Options = {
-  width: 10,
-  height: 10,
-};
 
 export class LayoutDesigner extends Container {
   readonly #tileSet: TileSet;
   readonly #layout: Layout;
-  readonly #options: Options;
   readonly #tileSelector: TileSelector;
   #currentTilePreview: Tile;
 
-  constructor(atlas: SpriteAtlas, opts: Partial<Options> = {}) {
+  constructor(atlas: SpriteAtlas) {
     super();
     this.#tileSet = new TileSet(atlas);
-    this.#options = { ...defaultOptions, ...opts };
 
     this.#tileSelector = new TileSelector(atlas);
     this.#tileSelector.scale = { x: 0.5, y: 0.5 };
@@ -35,14 +24,14 @@ export class LayoutDesigner extends Container {
     this.#currentTilePreview = this.#tileSet.GetTile("empty");
     this.addChild(this.#currentTilePreview);
 
-    this.#layout = new Layout(
-      this.#tileSet,
-      this.#options.width,
-      this.#options.height,
-      atlas.TileSize
-    );
+    const width = getStoreVal("width");
+    const height = getStoreVal("height");
+
+    this.#layout = new Layout(this.#tileSet, width, height, atlas.TileSize);
     this.addChild(this.#layout);
     this.#layout.y = this.#tileSelector.height + 5;
+
+    this.#updateSelectedTile();
   }
 
   act(action: LayoutDesignerAction) {

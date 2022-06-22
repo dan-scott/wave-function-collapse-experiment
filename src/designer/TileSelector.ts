@@ -4,6 +4,7 @@ import { LayoutDesignerAction } from "./LayoutDesigner";
 import { GridNav } from "./GridNav";
 import { TileId } from "../tilesets/TileSet";
 import { Action } from "../Action";
+import { getStoreVal, setStoreVal } from "../Store";
 
 export class TileSelector extends Container {
   readonly #atlas: SpriteAtlas;
@@ -60,6 +61,8 @@ export class TileSelector extends Container {
       this.#atlas.TileSize - 12
     );
     this.addChild(this.#secondaryHighlight);
+
+    this.#loadState();
   }
 
   act(action: LayoutDesignerAction) {
@@ -70,6 +73,7 @@ export class TileSelector extends Container {
 
     if (cmp === "sprites") {
       this.#swap();
+      this.#persistSelection();
       return;
     }
 
@@ -94,7 +98,9 @@ export class TileSelector extends Container {
         } else {
           this.#secondaryEnabled = !this.#secondaryEnabled;
         }
+        break;
     }
+    this.#persistSelection();
   }
 
   #updatePrimary() {
@@ -110,10 +116,31 @@ export class TileSelector extends Container {
     hgl.y = pos[1] * (this.#atlas.TileSize + 2);
   }
 
+  #persistSelection() {
+    setStoreVal("tile", this.TileId);
+  }
+
   #swap() {
     const tmp = this.#primaryNav.Idx;
     this.#primaryNav.Idx = this.#secondaryNav.Idx;
     this.#secondaryNav.Idx = tmp;
+  }
+
+  #loadState() {
+    const tile = getStoreVal("tile");
+    if (tile === "empty") {
+      this.#primaryEnabled = false;
+      this.#secondaryEnabled = false;
+    } else if (Array.isArray(tile)) {
+      this.#primaryEnabled = true;
+      this.#secondaryEnabled = true;
+      this.#primaryNav.Idx = tile[0];
+      this.#secondaryNav.Idx = tile[1];
+    } else {
+      this.#primaryEnabled = true;
+      this.#secondaryEnabled = false;
+      this.#secondaryNav.Idx = tile;
+    }
   }
 }
 
