@@ -8,13 +8,16 @@ export interface IState {
   grid: TileId[];
 }
 
-const defaultState: IState = {
-  grid: [],
-  height: 10,
-  width: 20,
-  cell: 0,
-  tile: "empty",
-};
+const defaultState: IState = (() => {
+  const grid: TileId[] = [...Array(10 * 20).keys()].map(() => "empty");
+  return {
+    grid,
+    height: 10,
+    width: 20,
+    cell: 0,
+    tile: "empty",
+  };
+})();
 
 const storeKey = "layout_state";
 

@@ -19,6 +19,10 @@ export class Tile extends Container {
 export class TileSet {
   readonly #atlas: SpriteAtlas;
 
+  public get TileSize() {
+    return this.#atlas.TileSize;
+  }
+
   constructor(atlas: SpriteAtlas) {
     this.#atlas = atlas;
   }

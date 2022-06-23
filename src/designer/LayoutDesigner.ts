@@ -27,7 +27,7 @@ export class LayoutDesigner extends Container {
     const width = getStoreVal("width");
     const height = getStoreVal("height");
 
-    this.#layout = new Layout(this.#tileSet, width, height, atlas.TileSize);
+    this.#layout = new Layout(this.#tileSet, width, height);
     this.addChild(this.#layout);
     this.#layout.y = this.#tileSelector.height + 5;
 

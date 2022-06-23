@@ -24,7 +24,7 @@ export class SpriteAtlas {
   readonly #columns: number;
   readonly #rows: number;
   readonly #tileSize: number;
-  readonly #empty: Sprite;
+  readonly #empty: () => Sprite;
 
   public get SpriteSheet() {
     return this.#sheet;
@@ -42,7 +42,7 @@ export class SpriteAtlas {
     return this.#tileSize;
   }
   public get Empty() {
-    return this.#empty;
+    return this.#empty();
   }
 
   constructor(
@@ -59,11 +59,14 @@ export class SpriteAtlas {
     this.#rows = rows;
     this.#tileSize = tileSize;
     if (emptySprite) {
-      this.#empty = this.spriteAt(emptySprite);
+      this.#empty = () => this.spriteAt(emptySprite);
     } else {
-      this.#empty = new Sprite(Texture.EMPTY);
-      this.#empty.width = this.#tileSize;
-      this.#empty.height = this.#tileSize;
+      this.#empty = () => {
+        const empty = new Sprite(Texture.EMPTY);
+        empty.width = this.#tileSize;
+        empty.height = this.#tileSize;
+        return empty;
+      };
     }
   }
 
