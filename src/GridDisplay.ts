@@ -1,9 +1,9 @@
-import { Tile, TileId, TileSet } from "./tilesets/TileSet";
+import { Tile, TileId, TileSet, TileText } from "./tilesets/TileSet";
 import { Container } from "pixi.js";
 import { GridNav } from "./designer/GridNav";
 
 interface GridCell {
-  tid: TileId;
+  tid: TileId | TileText;
   tile: Tile;
 }
 
@@ -11,7 +11,7 @@ interface Opts {
   tileSet: TileSet;
   columns: number;
   rows: number;
-  grid?: TileId[];
+  grid?: Array<TileId | TileText>;
 }
 
 export class GridDisplay extends Container {
@@ -49,7 +49,7 @@ export class GridDisplay extends Container {
     tile.y = y * this.#tileSet.TileSize;
   }
 
-  setGrid(grid: TileId[], columns: number) {
+  setGrid(grid: Array<TileId | TileText>, columns: number) {
     const rows = grid.length / columns;
     if (rows !== Math.round(rows)) {
       throw new Error("invalid column size for grid");
@@ -72,7 +72,7 @@ export class GridDisplay extends Container {
     });
   }
 
-  setCell(idx: number, tid: TileId) {
+  setCell(idx: number, tid: TileId | TileText) {
     const cell = this.#grid[idx];
     this.removeChild(cell.tile);
     cell.tile.destroy({ children: true });

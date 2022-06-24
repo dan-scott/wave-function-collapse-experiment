@@ -1,10 +1,15 @@
-import { TileId } from "./tilesets/TileSet";
+import { TileId, TileSet, TileText } from "./tilesets/TileSet";
 import { Direction, GridNav } from "./designer/GridNav";
 import { SpriteId } from "./sprites/SpriteAtlas";
+import { Container, Graphics } from "pixi.js";
+import { GridDisplay } from "./GridDisplay";
 
 type TileIdStr = SpriteId | "empty" | `${SpriteId}_${SpriteId}`;
 
 type CompatStr = `${TileIdStr}::${Direction}::${TileIdStr}`;
+
+const delay = async (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 function compatStr(
   origin: TileIdStr,
@@ -40,6 +45,7 @@ interface Opts {
   inputWidth: number;
   rows: number;
   columns: number;
+  tileSet: TileSet;
 }
 
 interface SuperPosition {
@@ -47,24 +53,51 @@ interface SuperPosition {
   entropy: number;
 }
 
-export class WaveFunction {
+export class WaveFunction extends Container {
   readonly #opts: Opts;
   readonly #superPos: Array<SuperPosition>;
   readonly #compat: Set<CompatStr>;
   readonly #weights: Map<TileIdStr, number>;
+  readonly #display: GridDisplay;
+  readonly #nav: GridNav;
+  readonly #focus: Graphics;
 
   constructor(opts: Opts) {
+    super();
     this.#opts = opts;
     this.#weights = WaveFunction.#calcWeights(opts);
     this.#superPos = this.#genSuperPos(opts);
     this.#compat = WaveFunction.#genCompat(opts);
+    this.#display = new GridDisplay({
+      tileSet: opts.tileSet,
+      columns: opts.columns,
+      rows: opts.rows,
+      grid: this.#getOutputGrid(),
+    });
+    this.addChild(this.#display);
+    this.#focus = new Graphics();
+    this.#focus.lineStyle(2, 0xff0000);
+    this.#focus.drawRect(0, 0, opts.tileSet.TileSize, opts.tileSet.TileSize);
+    this.addChild(this.#focus);
+    this.#nav = new GridNav({
+      columns: opts.columns,
+      rows: opts.rows,
+      onChange: () => {
+        const [x, y] = this.#nav.XY;
+        this.#focus.x = opts.tileSet.TileSize * x;
+        this.#focus.y = opts.tileSet.TileSize * y;
+      },
+    });
   }
 
-  gen(): TileId[] {
+  async gen(): Promise<Array<TileId | TileText>> {
     while (!this.#isFullyCollapsed()) {
       const idx = this.#minEntropyIdx();
+      this.#nav.Idx = idx;
+      await delay(10);
       this.#collapseIdx(idx);
-      this.#propagateFrom(idx);
+      await delay(10);
+      await this.#propagateFrom(idx);
     }
     return this.#getOutputGrid();
   }
@@ -153,26 +186,29 @@ export class WaveFunction {
       rand -= weight;
       if (rand < 0) {
         chosen = tileId;
+        break;
       }
     }
     if (chosen === undefined) {
       throw new Error("HOW NO TILE!?");
     }
     this.#superPos[idx].tiles = [chosen];
+    this.#display.setCell(idx, fromStr(chosen));
   }
 
-  #propagateFrom(startIdx: number) {
+  async #propagateFrom(startIdx: number) {
     const stack = [startIdx];
     const nav = new GridNav({
       rows: this.#opts.rows,
       columns: this.#opts.columns,
-      wrap: false,
+      wrap: true,
     });
     while (stack.length > 0) {
       const currIdx = stack.pop()!;
       const currSuper = this.#superPos[currIdx].tiles;
       nav.Idx = currIdx;
       for (const { idx, direction } of nav.neighbours()) {
+        this.#nav.Idx = idx;
         const otherTiles = [...this.#superPos[idx].tiles];
         for (const tile of otherTiles) {
           const isPossible = currSuper.some((t) =>
@@ -184,6 +220,12 @@ export class WaveFunction {
             this.#superPos[idx].entropy = this.#entropyOf(
               this.#superPos[idx].tiles
             );
+            const tiles = this.#superPos[idx].tiles;
+            if (tiles.length !== 1) {
+              this.#display.setCell(idx, tiles.length.toString());
+            } else {
+              this.#display.setCell(idx, tiles[0]);
+            }
             if (stack.indexOf(idx) == -1) {
               stack.push(idx);
             }
@@ -193,7 +235,12 @@ export class WaveFunction {
     }
   }
 
-  #getOutputGrid() {
-    return this.#superPos.map(({ tiles }) => fromStr(tiles[0]));
+  #getOutputGrid(): Array<TileId | TileText> {
+    return this.#superPos.map(({ tiles }) => {
+      if (tiles.length !== 1) {
+        return tiles.length.toString();
+      }
+      return fromStr(tiles[0]);
+    });
   }
 }

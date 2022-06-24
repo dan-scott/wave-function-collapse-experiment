@@ -1,20 +1,11 @@
 import { SpriteAtlas, SpriteId } from "../sprites/SpriteAtlas";
-import { Container } from "pixi.js";
+import { Container, Text, TextStyle } from "pixi.js";
+
+export type TileText = string;
 
 export type TileId = "empty" | SpriteId | [SpriteId, SpriteId];
 
-export class Tile extends Container {
-  constructor(atlas: SpriteAtlas, ...sprites: SpriteId[]) {
-    super();
-    if (sprites.length === 0) {
-      this.addChild(atlas.Empty);
-    } else {
-      if (sprites.length > 0) {
-        this.addChild(...sprites.map((s) => atlas.spriteAt(s)));
-      }
-    }
-  }
-}
+export interface Tile extends Container {}
 
 export class TileSet {
   readonly #atlas: SpriteAtlas;
@@ -27,15 +18,39 @@ export class TileSet {
     this.#atlas = atlas;
   }
 
-  public GetTile(id: TileId): Tile {
-    if (id === "empty") {
-      return new Tile(this.#atlas);
+  public GetTile(idOrText: TileId | TileText): Tile {
+    if (idOrText === "empty") {
+      return this.#atlas.Empty as Tile;
     }
 
-    if (Array.isArray(id)) {
-      return new Tile(this.#atlas, ...id);
+    if (typeof idOrText === "string") {
+      return this.#genTextTile(idOrText);
     }
 
-    return new Tile(this.#atlas, id);
+    if (Array.isArray(idOrText)) {
+      return this.#layeredTile(idOrText);
+    }
+
+    return this.#atlas.spriteAt(idOrText);
+  }
+
+  #layeredTile([bottom, top]: [number, number]) {
+    const container = new Container();
+    container.addChild(this.#atlas.spriteAt(bottom), this.#atlas.spriteAt(top));
+    return container;
+  }
+
+  #genTextTile(text: string) {
+    const style = new TextStyle({
+      fill: "white",
+      fontSize: this.TileSize / 2,
+    });
+    const txtTile = new Text(text, style);
+    txtTile.calculateBounds();
+    txtTile.x = (this.#atlas.TileSize - txtTile.width) / 2;
+    txtTile.y = (this.#atlas.TileSize - txtTile.height) / 2;
+    const container = new Container();
+    container.addChild(txtTile);
+    return container;
   }
 }

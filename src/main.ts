@@ -9,7 +9,6 @@ import {
 import "./style.css";
 import { WaveFunction } from "./Collapse";
 import { getStoreVal } from "./Store";
-import { GridDisplay } from "./GridDisplay";
 import { TileSet } from "./tilesets/TileSet";
 
 let app = new Application({
@@ -60,7 +59,7 @@ const keymap: Record<string, LayoutDesignerAction["type"]> = {
   designer.y = 3;
   app.stage.addChild(designer);
 
-  let gridDisplay: GridDisplay | undefined;
+  let waveFn: WaveFunction | undefined;
 
   window.addEventListener("keydown", (evt) => {
     let map = keymap;
@@ -73,40 +72,33 @@ const keymap: Record<string, LayoutDesignerAction["type"]> = {
       designer.act({ type: map[evt.code] });
     }
     if (evt.code === "KeyG") {
-      const w = new WaveFunction({
-        inputGrid: getStoreVal("grid"),
-        rows: 10,
-        columns: 20,
-        inputWidth: 20,
-      });
-      const grid = w.gen();
       if (showingDesigner) {
         app.stage.removeChild(designer);
         showingDesigner = false;
       }
-      if (gridDisplay) {
-        app.stage.removeChild(gridDisplay);
-        gridDisplay.destroy({ children: true });
+      if (waveFn) {
+        app.stage.removeChild(waveFn);
+        waveFn.destroy({ children: true });
       }
-      gridDisplay = new GridDisplay({
-        columns: 20,
+      waveFn = new WaveFunction({
+        inputGrid: getStoreVal("grid"),
         rows: 10,
-        grid,
+        columns: 20,
+        inputWidth: 20,
         tileSet: new TileSet(atlas),
       });
-      gridDisplay.x = 3;
-      gridDisplay.y = 3;
-      app.stage.addChild(gridDisplay);
+      app.stage.addChild(waveFn);
+      waveFn.gen();
     }
     if (evt.code === "KeyH") {
       if (showingDesigner) {
         return;
       }
       showingDesigner = true;
-      if (gridDisplay) {
-        app.stage.removeChild(gridDisplay);
-        gridDisplay.destroy({ children: true });
-        gridDisplay = undefined;
+      if (waveFn) {
+        app.stage.removeChild(waveFn);
+        waveFn.destroy({ children: true });
+        waveFn = undefined;
       }
       app.stage.addChild(designer);
     }
