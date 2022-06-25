@@ -21,7 +21,7 @@ export class LayoutDesigner extends Container {
     this.#tileSelector.scale = { x: 0.5, y: 0.5 };
     this.addChild(this.#tileSelector);
 
-    this.#currentTilePreview = this.#tileSet.GetTile("empty");
+    this.#currentTilePreview = this.#tileSet.getTile("empty");
     this.addChild(this.#currentTilePreview);
 
     const width = getStoreVal("width");
@@ -43,7 +43,7 @@ export class LayoutDesigner extends Container {
   #updateSelectedTile() {
     this.removeChild(this.#currentTilePreview);
     this.#currentTilePreview.destroy();
-    this.#currentTilePreview = this.#tileSet.GetTile(this.#tileSelector.TileId);
+    this.#currentTilePreview = this.#tileSet.getTile(this.#tileSelector.TileId);
     this.#currentTilePreview.x = this.#tileSelector.width + 5;
     this.addChild(this.#currentTilePreview);
     this.#layout.StampTileId = this.#tileSelector.TileId;

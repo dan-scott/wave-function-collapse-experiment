@@ -72,8 +72,8 @@ export class WaveFunction extends Container {
       tileSet: opts.tileSet,
       columns: opts.columns,
       rows: opts.rows,
-      grid: this.#getOutputGrid(),
     });
+    this.#superPos.forEach((_, idx) => this.#updateDisplayCell(idx));
     this.addChild(this.#display);
     this.#focus = new Graphics();
     this.#focus.lineStyle(2, 0xff0000);
@@ -193,7 +193,7 @@ export class WaveFunction extends Container {
       throw new Error("HOW NO TILE!?");
     }
     this.#superPos[idx].tiles = [chosen];
-    this.#display.setCell(idx, fromStr(chosen));
+    this.#updateDisplayCell(idx);
   }
 
   async #propagateFrom(startIdx: number) {
@@ -220,12 +220,7 @@ export class WaveFunction extends Container {
             this.#superPos[idx].entropy = this.#entropyOf(
               this.#superPos[idx].tiles
             );
-            const tiles = this.#superPos[idx].tiles;
-            if (tiles.length !== 1) {
-              this.#display.setCell(idx, tiles.length.toString());
-            } else {
-              this.#display.setCell(idx, tiles[0]);
-            }
+            this.#updateDisplayCell(idx);
             if (stack.indexOf(idx) == -1) {
               stack.push(idx);
             }
@@ -235,10 +230,23 @@ export class WaveFunction extends Container {
     }
   }
 
+  #updateDisplayCell(idx: number) {
+    const cell = this.#superPos[idx];
+    if (cell.tiles.length === 1) {
+      this.#display.setCell(idx, fromStr(cell.tiles[0]));
+      return;
+    }
+    const tiles = [
+      ...cell.tiles.map(fromStr),
+      { txt: cell.tiles.length.toString() },
+    ];
+    this.#display.setBlendedCell(idx, tiles);
+  }
+
   #getOutputGrid(): Array<TileId | TileText> {
     return this.#superPos.map(({ tiles }) => {
       if (tiles.length !== 1) {
-        return tiles.length.toString();
+        return { txt: tiles.length.toString() };
       }
       return fromStr(tiles[0]);
     });

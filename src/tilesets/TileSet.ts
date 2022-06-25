@@ -1,7 +1,7 @@
 import { SpriteAtlas, SpriteId } from "../sprites/SpriteAtlas";
 import { Container, Text, TextStyle } from "pixi.js";
 
-export type TileText = string;
+export type TileText = { txt: string };
 
 export type TileId = "empty" | SpriteId | [SpriteId, SpriteId];
 
@@ -18,13 +18,27 @@ export class TileSet {
     this.#atlas = atlas;
   }
 
-  public GetTile(idOrText: TileId | TileText): Tile {
+  public getSuperPosTile(ids: Array<TileId | TileText>): Tile {
+    const container = new Container();
+    if (!ids.length) {
+      return container;
+    }
+    const alpha = Math.max(0.6, 1 / ids.length);
+    for (const id of ids) {
+      const t = this.getTile(id);
+      t.alpha = alpha;
+      container.addChild(t);
+    }
+    return container;
+  }
+
+  public getTile(idOrText: TileId | TileText): Tile {
     if (idOrText === "empty") {
       return this.#atlas.Empty as Tile;
     }
 
-    if (typeof idOrText === "string") {
-      return this.#genTextTile(idOrText);
+    if (typeof idOrText === "object" && "txt" in idOrText) {
+      return this.#genTextTile(idOrText.txt);
     }
 
     if (Array.isArray(idOrText)) {

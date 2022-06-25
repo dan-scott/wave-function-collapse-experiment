@@ -29,12 +29,12 @@ export class GridDisplay extends Container {
     }
   }
 
-  #setEmptyGrid(columns: number, rows: number): Array<GridCell> {
+  #setEmptyGrid(columns: number, rows: number) {
     this.#nav = new GridNav({ columns, rows });
-    return [...Array(columns * rows).keys()].map((_, idx) => {
+    this.#grid = [...Array(columns * rows).keys()].map((_, idx) => {
       const cell: GridCell = {
         tid: "empty",
-        tile: this.#tileSet.GetTile("empty"),
+        tile: this.#tileSet.getTile("empty"),
       };
       this.#setTilePos(idx, cell.tile);
       this.addChild(cell.tile);
@@ -62,7 +62,7 @@ export class GridDisplay extends Container {
     }
     this.#nav = new GridNav({ rows, columns });
     this.#grid = grid.map((tid, idx) => {
-      const tile = this.#tileSet.GetTile(tid);
+      const tile = this.#tileSet.getTile(tid);
       this.#setTilePos(idx, tile);
       this.addChild(tile);
       return {
@@ -77,7 +77,17 @@ export class GridDisplay extends Container {
     this.removeChild(cell.tile);
     cell.tile.destroy({ children: true });
     cell.tid = tid;
-    cell.tile = this.#tileSet.GetTile(tid);
+    cell.tile = this.#tileSet.getTile(tid);
+    this.#setTilePos(idx, cell.tile);
+    this.addChild(cell.tile);
+  }
+
+  setBlendedCell(idx: number, tids: Array<TileId | TileText>) {
+    const cell = this.#grid[idx];
+    this.removeChild(cell.tile);
+    cell.tile.destroy({ children: true });
+    cell.tid = tids[0];
+    cell.tile = this.#tileSet.getSuperPosTile(tids);
     this.#setTilePos(idx, cell.tile);
     this.addChild(cell.tile);
   }
